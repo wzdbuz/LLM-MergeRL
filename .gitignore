@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.tmp
+
+# 虚拟环境
+venv/
+env/
+.venv/
+.conda/
+**/venv/
+**/.venv/
+
+# 依赖/配置
+pip-log.txt
+pip-delete-this-directory.txt
+python-env/
+*.egg-info/
+dist/
+build/
+
+# 环境变量
+.env
+.env.* 
+.venv
+
+# 日志/缓存/检查点（你的目录可能已有内容）
+logs/
+results/
+checkpoints/
+*.log
+*.log.*
+*.h5
+*.ckpt
+*.pt
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# IDE / 编辑器
+.vscode/
+.idea/
+*.iml
+*.suo
+*.user
+*.userosscache
+*.sln
+*.sw?
