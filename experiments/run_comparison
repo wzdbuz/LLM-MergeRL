@@ -1,0 +1,30 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from training.trainer import train
+from evaluation.evaluator import evaluate
+
+if __name__ == "__main__":
+    results = {}
+
+    for mode in ["baseline", "llm_state", "llm_reward"]:
+        print(f"\n{'='*50}")
+        print(f"开始实验: {mode}")
+        print(f"{'='*50}")
+        train(mode=mode, experiment_name=mode)
+        results[mode] = evaluate(
+            mode=mode,
+            model_path=f"results/checkpoints/{mode}/best_model"
+        )
+
+    # 打印汇总对比表
+    print("\n" + "="*50)
+    print("三组实验对比汇总")
+    print("="*50)
+    print(f"{'指标':<20} {'Baseline':>12} {'LLM-state':>12} {'LLM-reward':>12}")
+    print("-"*56)
+    for key in ["mean_reward", "std_reward", "mean_length", "crash_rate"]:
+        row = f"{key:<20}"
+        for mode in ["baseline", "llm_state", "llm_reward"]:
+            row += f"{results[mode][key]:>12.4f}"
+        print(row)

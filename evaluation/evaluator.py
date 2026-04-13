@@ -4,7 +4,7 @@ from config.config import ENV_CONFIG, TRAIN_CONFIG
 from env.highway_wrapper import make_env
 
 
-def evaluate(model_path: str = None, n_episodes: int = 50):
+def evaluate(mode: str = "baseline", model_path: str = None, n_episodes: int = 50):
     """
     加载模型，跑 n_episodes 个 episode，输出：
     - 平均奖励
@@ -12,10 +12,10 @@ def evaluate(model_path: str = None, n_episodes: int = 50):
     - 平均存活步数
     """
     if model_path is None:
-        model_path = f"{TRAIN_CONFIG['save_path']}/best_model"
+        model_path = f"results/checkpoints/{mode}/best_model"
 
     model = PPO.load(model_path)
-    env = make_env(ENV_CONFIG, seed=999)  # 固定 seed 保证可复现
+    env = make_env(ENV_CONFIG, seed=999, mode=mode)  # 加上 mode 参数
 
     rewards, lengths, crashes = [], [], []
 
@@ -29,7 +29,6 @@ def evaluate(model_path: str = None, n_episodes: int = 50):
             obs, reward, done, truncated, info = env.step(action)
             ep_reward += reward
             ep_len += 1
-            # highway-env 在 info 里记录碰撞
             if info.get("crashed", False):
                 crashed = True
 
@@ -44,7 +43,7 @@ def evaluate(model_path: str = None, n_episodes: int = 50):
         "crash_rate":  float(np.mean(crashes)),
     }
 
-    print("\n===== Baseline 评估结果 =====")
+    print(f"\n===== {mode} 评估结果 =====")
     for k, v in results.items():
         print(f"  {k:<16}: {v:.4f}")
 
