@@ -1,31 +1,23 @@
 # 构造发给LLM的prompt
 from typing import List
 import numpy as np
-
+from state_encoder.encoder import encode_obs
 
 def build_merge_prompt(obs: np.ndarray) -> str:
     """
-    将 highway-env 的 Kinematics 观测转成自然语言描述
-    obs shape: (vehicles_count, 5)，每行是 [presence, x, y, vx, vy]
+    将观测矩阵转成发给 LLM 的 Prompt。
+    obs shape: (5, 5)
     """
-    ego = obs[0]   # 第0行是自车
-    others = obs[1:]
+    scene = encode_obs(obs)  # 调用 encoder，不再重复写解析逻辑
 
-    # 自车状态
-    ego_speed = float(ego[3])  # vx
-
-    # 找到存在的其他车辆
-    visible = [(i, v) for i, v in enumerate(others) if v[0] > 0.5]
+    ego_speed = scene["ego"]["speed"]
 
     vehicle_desc = ""
-    for i, v in visible:
-        rel_x = float(v[1])   # 相对x（正=前方）
-        rel_y = float(v[2])   # 相对y（正=右侧/主路方向）
-        speed = float(v[3])
-        position = "前方" if rel_x > 0 else "后方"
-        lane = "主路" if abs(rel_y) > 0.3 else "同道"
-        vehicle_desc += f"  - 车辆{i+1}：{position}{lane}，"
-        vehicle_desc += f"相对距离x={rel_x:.2f}，速度={speed:.2f}\n"
+    for v in scene["vehicles"]:
+        vehicle_desc += (
+            f"  - 车辆{v['id']}：{v['position']}{v['lane']}，"
+            f"相对距离x={v['rel_x']:.2f}，速度={v['speed']:.2f}\n"
+        )
 
     if not vehicle_desc:
         vehicle_desc = "  - 周围无可见车辆\n"

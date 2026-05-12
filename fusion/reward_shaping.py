@@ -14,7 +14,8 @@ class RewardShaping(FusionBase):
 
     def process(self, obs: np.ndarray, reward: float) -> tuple:
         flat_obs = obs.flatten()
-        prior = self.get_prior(obs.reshape(5, 5))
+        n_vehicles = obs.size // 5  # 5个特征，自动计算车辆数
+        prior = self.get_prior(obs.reshape(n_vehicles, 5))
         bonus = prior.to_reward_bonus()                              # LLM 奖励加成
         new_reward = reward + self.lambda_weight * bonus             # 加权叠加
         return flat_obs, new_reward                                  # 观测不变

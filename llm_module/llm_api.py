@@ -9,7 +9,7 @@ from llm_module.semantic_prior import SemanticPrior
 class LLMClient:
     def __init__(self, api_key: str = None):
         self.client = OpenAI(
-            api_key=api_key or os.environ.get("DEEPSEEK_API_KEY"),
+            api_key=api_key or os.environ.get("DEEPSEEK_API_KEY") or os.environ.get("OPENAI_API_KEY"),
             base_url="https://api.deepseek.com",
         )
         self.model = "deepseek-chat"

@@ -11,7 +11,8 @@ class StateFusion(FusionBase):
 
     def process(self, obs: np.ndarray, reward: float) -> tuple:
         flat_obs = obs.flatten()                        # (5,5) → (25,)
-        prior = self.get_prior(obs.reshape(5, 5))       # 获取语义先验
+        n_vehicles = obs.size // 5
+        prior = self.get_prior(obs.reshape(n_vehicles, 5))
         prior_vec = prior.to_vector()                   # 转成 (4,) 向量
         new_obs = np.concatenate([flat_obs, prior_vec]) # 拼接 → (29,)
         return new_obs, reward                          # 奖励不变
