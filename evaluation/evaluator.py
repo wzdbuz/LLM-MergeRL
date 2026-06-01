@@ -64,8 +64,20 @@ def evaluate(
 
                 # 速度指标：用 highway-env 内部 ego 车速（更直观）
                 try:
-                    speed_sum += float(env.unwrapped.vehicle.speed)
-                except Exception:
+                    vehicle = env.unwrapped.vehicle
+                    if hasattr(vehicle, 'speed'):
+                        current_speed = float(vehicle.speed)
+                    elif hasattr(vehicle, 'velocity'):
+                        vel = vehicle.velocity
+                        current_speed = float(np.sqrt(vel.get('vx', 0)**2 + vel.get('vy', 0)**2))
+                    else:
+                        current_speed = 0.0
+                        if ep_len == 1:
+                            print(f"Warning: Vehicle has no speed or velocity attribute. Available attrs: {[a for a in dir(vehicle) if not a.startswith('_')][:10]}")
+                    speed_sum += current_speed
+                except Exception as e:
+                    if ep_len == 1:
+                        print(f"Warning: Failed to get speed at step 1: {type(e).__name__}: {e}")
                     pass
 
             rewards.append(ep_reward)

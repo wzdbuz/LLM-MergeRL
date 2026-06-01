@@ -106,13 +106,8 @@ class MultiSeedEvalCallback(BaseCallback):
         self._csv_inited = True
 
     def _next_eval_seeds(self) -> list[int]:
-        # 论文方案：12 个 seed，奇数次评估用前 6 个，偶数次评估用后 6 个
-        if len(self.eval_seed_pool) == 12 and self.n_eval_seeds == 6:
-            return list(self.eval_seed_pool[:6] if (self._eval_idx % 2 == 0) else self.eval_seed_pool[6:])
-
-        # fallback：轮转取 seed（保持可复现）
-        start = (self._eval_idx * self.n_eval_seeds) % len(self.eval_seed_pool)
-        return [self.eval_seed_pool[(start + i) % len(self.eval_seed_pool)] for i in range(self.n_eval_seeds)]
+        # 每次评估直接用全部24个种子
+        return list(self.eval_seed_pool)
 
     # ↓ 修改1：加入 seed 参数
     def _rollout_one_episode(self, env: Monitor, seed: int) -> tuple[float, int, float, int]:

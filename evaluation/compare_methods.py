@@ -41,14 +41,22 @@ def latest_subdir(path):
 
 def load_progress(progress_path):
     train_steps, train_rewards, ev_steps, ev_values = [], [], [], []
+    last_ts = None
     with open(progress_path, encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            if row.get("time/total_timesteps") and row.get("rollout/ep_rew_mean"):
-                train_steps.append(int(row["time/total_timesteps"]))
+            ts_val = row.get("time/total_timesteps", "").strip()
+            if ts_val:
+                last_ts = int(ts_val)
+
+            if ts_val and row.get("rollout/ep_rew_mean", "").strip():
+                train_steps.append(last_ts)
                 train_rewards.append(float(row["rollout/ep_rew_mean"]))
-            if row.get("time/total_timesteps") and row.get("train/explained_variance"):
-                ev_steps.append(int(row["time/total_timesteps"]))
-                ev_values.append(float(row["train/explained_variance"]))
+
+            ev_val = row.get("train/explained_variance", "").strip()
+            if ev_val and last_ts is not None:
+                ev_steps.append(last_ts)
+                ev_values.append(float(ev_val))
+
     return (np.array(train_steps), np.array(train_rewards),
             np.array(ev_steps),    np.array(ev_values))
 

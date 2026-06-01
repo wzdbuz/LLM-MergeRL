@@ -9,13 +9,13 @@ env:
       absolute: false
     action:
       type: DiscreteMetaAction
-    duration: 30
+    duration: 250
     vehicles_count: 10
     collision_reward: -5
     reward_speed_range: [20, 30]
-    high_speed_reward: 0.4
-    merging_speed_reward: 0.5
-    lane_change_reward: 0
+    high_speed_reward: 2.0
+    merging_speed_reward: 0.3
+    lane_change_reward: 0.3
 
 dqn:
   learning_rate: 0.0001
@@ -32,9 +32,9 @@ train:
   total_timesteps: 1000000
   seed: 42
   n_eval_episodes: 1
-  n_eval_seeds: 6
-  eval_seed_pool: [100, 137, 256, 891, 1024, 2048, 3141, 5678, 7777, 9999, 12345, 65536]
-  eval_freq: 5000
+  n_eval_seeds: 24
+  eval_seed_pool: [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150]
+  eval_freq: 6144
   n_envs: 1
   mode: baseline
   use_fake_llm: true

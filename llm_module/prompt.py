@@ -22,7 +22,7 @@ def build_merge_prompt(obs: np.ndarray) -> str:
     if not vehicle_desc:
         vehicle_desc = "  - 周围无可见车辆\n"
 
-    prompt = f"""你是一个自动驾驶决策助手，当前场景是高速公路匝道汇入。
+    prompt = f"""你是一个自动驾驶决策助手，当前场景是高速公路主路行驶，需要为匝道汇入车辆让行。
 
 当前状态：
 - 自车速度：{ego_speed:.2f}（归一化值，1.0为最高速）

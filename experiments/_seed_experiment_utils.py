@@ -41,6 +41,16 @@ def summarize_last10_evals(eval_csv_path: str) -> tuple[float, float, float, int
     if not rows:
         raise ValueError(f"Empty eval csv: {eval_csv_path}")
 
+    # 完整性检查：
+    # eval_freq=6144，100万步共约163次评估，每次24行，共约3912行
+    # 允许20%误差，防止最后一轮rollout步数略超100万导致行数略少
+    expected_rows = 3912
+    if len(rows) < expected_rows * 0.80:
+        raise ValueError(
+            f"CSV不完整（{len(rows)}行，期望至少{int(expected_rows * 0.80)}行），"
+            f"训练可能未完成: {eval_csv_path}"
+        )
+
     eval_indices = sorted({int(r["eval_index"]) for r in rows})
     last10 = set(eval_indices[-10:])
     filtered = [r for r in rows if int(r["eval_index"]) in last10]
@@ -118,4 +128,3 @@ def write_method_report(out_csv: str, method_report: dict, per_run: list[RunSumm
                     "csv_path": s.csv_path,
                 }
             )
-

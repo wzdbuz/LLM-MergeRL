@@ -5,23 +5,24 @@ from rl_agent.PPO import make_ppo_model
 from training.callback import MultiSeedEvalCallback
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.logger import configure  # 新增
+from stable_baselines3.common.logger import configure
 
 from config.config import get_config
 from env.highway_wrapper import make_env
 
 
-def train(mode: str = "baseline", experiment_name: str = "baseline", train_seed: int | None = None):
+def train(mode: str = "baseline", experiment_name: str = "baseline",
+          train_seed: int | None = None, ablation: str | None = None):
     ENV_CONFIG, PPO_CONFIG, TRAIN_CONFIG = get_config(mode)
     experiment_name = experiment_name or mode
     if train_seed is not None:
         TRAIN_CONFIG["seed"] = int(train_seed)
     set_seed(TRAIN_CONFIG["seed"])
-    # 强制：训练阶段一律使用 FakeLLM（避免训练过程中产生海量 DeepSeek 调用费用）
     use_fake_llm = True
 
     print("=" * 50)
-    print(f"训练 PPO — {ENV_CONFIG['id']} — 模式: {mode}")
+    print(f"训练 PPO — {ENV_CONFIG['id']} — 模式: {mode}"
+          + (f" — 消融: {ablation}" if ablation else ""))
     print("=" * 50)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -33,7 +34,9 @@ def train(mode: str = "baseline", experiment_name: str = "baseline", train_seed:
 
     train_env = SubprocVecEnv([
         (lambda i: lambda: Monitor(
-            make_env(ENV_CONFIG, seed=TRAIN_CONFIG["seed"] + i, mode=mode, use_fake_llm=use_fake_llm)
+            make_env(ENV_CONFIG, seed=TRAIN_CONFIG["seed"] + i,
+                     mode=mode, use_fake_llm=use_fake_llm,
+                     ablation=ablation)   # ← 传入ablation
         ))(i)
         for i in range(TRAIN_CONFIG["n_envs"])
     ])
@@ -45,7 +48,6 @@ def train(mode: str = "baseline", experiment_name: str = "baseline", train_seed:
         seed=TRAIN_CONFIG["seed"],
     )
 
-    # 禁用 TensorBoard，只用 stdout 和 csv，彻底解决权限问题
     new_logger = configure(log_path, ["stdout", "csv"])
     model.set_logger(new_logger)
 
@@ -75,4 +77,3 @@ def train(mode: str = "baseline", experiment_name: str = "baseline", train_seed:
     model.save(f"{save_path}/final_model")
     print(f"\n训练完成，模型保存在 {save_path}")
     return model
-

@@ -9,13 +9,13 @@ env:
       absolute: false
     action:
       type: DiscreteMetaAction
-    duration: 30
+    duration: 250
     vehicles_count: 10
     collision_reward: -5
+    high_speed_reward: 2.0     # 让高速奖励有足够吸引力
     reward_speed_range: [20, 30]
-    high_speed_reward: 0.4
-    merging_speed_reward: 0.5
-    lane_change_reward: 0
+    merging_speed_reward: 0.3
+    lane_change_reward: 0.3
 
 ppo:
   learning_rate: 0.0003
@@ -25,21 +25,19 @@ ppo:
   gamma: 0.99
   gae_lambda: 0.95
   clip_range: 0.2
-  ent_coef: 0.01
+  ent_coef: 0.02
   device: "cuda"
   verbose: 1
+  max_grad_norm: 0.3
 
 train:
   total_timesteps: 1000000
   seed: 42
-  # 评估：每次评估使用 6 个 seed，每个 seed 跑 1 个 episode（共 6 个 episode）
   n_eval_episodes: 1
-  n_eval_seeds: 6
-  # 固定 12 个评估 seed：奇数次评估用前 6 个，偶数次评估用后 6 个
-  eval_seed_pool: [101, 202, 303, 404, 505, 606, 707, 808, 909, 1111, 2222, 3333]
-  eval_freq: 5000
+  n_eval_seeds: 24
+  eval_seed_pool: [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150]
+  eval_freq: 6144
   n_envs: 12
   mode: baseline
-  # 训练阶段强制 FakeLLM（代码侧也会强制），这里保持一致避免误解
   use_fake_llm: true
   lambda_weight: 0.5
